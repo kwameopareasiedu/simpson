@@ -3,10 +3,10 @@ package dev.kwameopareasiedu.simpson.parser;
 import java.util.*;
 
 public class Parser {
-  private final Token[] tokens;
+  private final Tokenizer.Token[] tokens;
   private int index = 0;
 
-  public Parser(Token[] tokens) {
+  public Parser(Tokenizer.Token[] tokens) {
     if (tokens.length == 0)
       throw new IllegalArgumentException("Token list cannot empty");
 
@@ -15,7 +15,7 @@ public class Parser {
   }
 
   public Node<?> parse() {
-    Token currentToken = tokens[index];
+    Tokenizer.Token currentToken = tokens[index];
 
     return switch (currentToken.type()) {
       case STRING -> new StringNode(currentToken.value());
@@ -32,15 +32,15 @@ public class Parser {
 
   private ObjectNode parseObject() {
     Map<String, Node<?>> objectNodeValue = new HashMap<>();
-    Token token = advance(); // Should be an object key
+    Tokenizer.Token token = advance(); // Should be an object key
 
-    while (token.type() != Token.Type.BRACE_CLOSE) {
-      if (token.type() == Token.Type.STRING) {
+    while (token.type() != Tokenizer.Token.Type.BRACE_CLOSE) {
+      if (token.type() == Tokenizer.Token.Type.STRING) {
         String key = token.value();
 
         token = advance(); // Should be a colon
 
-        if (token.type() != Token.Type.COLON)
+        if (token.type() != Tokenizer.Token.Type.COLON)
           throw new IllegalArgumentException("Expected : after key");
         else advance();
 
@@ -54,7 +54,7 @@ public class Parser {
 
       token = advance(); // Should be a comma or a closing brace
 
-      if (token.type() == Token.Type.COMMA)
+      if (token.type() == Tokenizer.Token.Type.COMMA)
         token = advance();
     }
 
@@ -63,32 +63,64 @@ public class Parser {
 
   private ArrayNode parseArray() {
     List<Node<?>> arrayNodeValue = new ArrayList<>();
-    Token token = advance(); // Should be an object key
+    Tokenizer.Token token = advance(); // Should be an object key
 
-    while (token.type() != Token.Type.BRACKET_CLOSE) {
+    while (token.type() != Tokenizer.Token.Type.BRACKET_CLOSE) {
       Node<?> value = parse();
       arrayNodeValue.add(value);
 
       token = advance(); // Should be a comma or a closing bracket
 
-      if (token.type() == Token.Type.COMMA)
+      if (token.type() == Tokenizer.Token.Type.COMMA)
         token = advance();
     }
 
     return new ArrayNode(arrayNodeValue.toArray(Node[]::new));
   }
 
-  private Token advance() {
+  private Tokenizer.Token advance() {
     return tokens[++index];
   }
 
   public static abstract class Node<V> {
-    public final Type type;
-    public final V value;
+    protected final Type type;
+    protected final V value;
 
     protected Node(Type type, V value) {
       this.type = type;
       this.value = value;
+    }
+
+    public V get() {
+      return value;
+    }
+
+    public boolean isString() {
+      return type == Node.Type.STRING;
+    }
+
+    public boolean isInteger() {
+      return type == Node.Type.INTEGER;
+    }
+
+    public boolean isDecimal() {
+      return type == Node.Type.DECIMAL;
+    }
+
+    public boolean isBoolean() {
+      return type == Node.Type.BOOLEAN;
+    }
+
+    public boolean isObject() {
+      return type == Node.Type.OBJECT;
+    }
+
+    public boolean isArray() {
+      return type == Node.Type.ARRAY;
+    }
+
+    public boolean isNull() {
+      return type == Node.Type.NULL;
     }
 
     @Override
@@ -136,6 +168,36 @@ public class Parser {
       super(Type.OBJECT, value);
     }
 
+    public boolean has(String key) {
+      return value.containsKey(key);
+    }
+
+    public Node<?> get(String keyOrPath) {
+      Node<?> node = value.get(keyOrPath);
+      if (node != null) return node;
+
+      // Parse as path string (E.g. "nested.items.0.attribute")
+      String[] parts = keyOrPath.split("\\.");
+      Node<?> nextNode = null;
+      int index = 0;
+
+      while (index < parts.length) {
+        String nextKey = parts[index];
+
+        if (nextNode == null) {
+          nextNode = value.get(nextKey);
+        } else if (nextNode instanceof ObjectNode) {
+          nextNode = ((ObjectNode) nextNode).get(nextKey);
+        } else if (nextNode instanceof ArrayNode) {
+          nextNode = ((ArrayNode) nextNode).get(Integer.parseInt(nextKey));
+        }
+
+        index++;
+      }
+
+      return nextNode;
+    }
+
     @Override
     public String toString() {
       StringBuilder builder = new StringBuilder("ObjectNode[");
@@ -164,6 +226,17 @@ public class Parser {
       super(Type.ARRAY, value);
     }
 
+    public int getLength() {
+      return value.length;
+    }
+
+    public Node<?> get(int index) {
+      if (index >= value.length)
+        throw new IndexOutOfBoundsException(index);
+
+      return value[index];
+    }
+
     @Override
     public String toString() {
       StringBuilder builder = new StringBuilder("ArrayNode[");
@@ -178,7 +251,6 @@ public class Parser {
       builder.append("]");
       return builder.toString();
     }
-
   }
 
   public static class NullNode extends Node<Object> {

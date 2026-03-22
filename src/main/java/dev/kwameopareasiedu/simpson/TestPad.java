@@ -1,8 +1,6 @@
 package dev.kwameopareasiedu.simpson;
 
 import dev.kwameopareasiedu.simpson.parser.Parser;
-import dev.kwameopareasiedu.simpson.parser.Token;
-import dev.kwameopareasiedu.simpson.parser.Tokenizer;
 
 public class TestPad {
   private TestPad() { }
@@ -12,7 +10,7 @@ public class TestPad {
       {
         "id": "647ceaf3657eade56f8224eb",
         "index": 0,
-        "double": 0.13,
+        "double": -1e+9999,
         "array": [
           1,
           "another",
@@ -23,19 +21,12 @@ public class TestPad {
         ],
         "booleanTrue": true,
         "booleanFalse": false,
-        "nullValue": null
+        "null": null
       }
       """;
 
-    Tokenizer tokenizer = new Tokenizer();
-    Token[] tokens = tokenizer.tokenize(json);
+    Parser.ObjectNode parsed = (Parser.ObjectNode) Simpson.parse(json);
 
-    for (Token token : tokens) {
-      System.out.println(token);
-    }
-
-    Parser parser = new Parser(tokens);
-    Parser.Node<?> ast = parser.parse();
-    System.out.println(ast);
+    System.out.println(parsed.get("double"));
   }
 }

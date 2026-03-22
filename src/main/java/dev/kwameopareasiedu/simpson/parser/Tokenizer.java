@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class Tokenizer {
-  private static final Pattern LITERAL_REGEX = Pattern.compile("[\\w.]");
+  private static final Pattern LITERAL_REGEX = Pattern.compile("[\\w.+-]");
   private static final Pattern WHITESPACE_REGEX = Pattern.compile("\\s");
 
   public Token[] tokenize(String json) {
@@ -108,5 +108,22 @@ public class Tokenizer {
 
   private boolean isNull(String val) {
     return val.equals("null");
+  }
+
+  public record Token(Type type, String value) {
+    public enum Type {
+      BRACE_OPEN,
+      BRACE_CLOSE,
+      BRACKET_OPEN,
+      BRACKET_CLOSE,
+      STRING,
+      INTEGER,
+      DECIMAL,
+      TRUE,
+      FALSE,
+      NULL,
+      COLON,
+      COMMA
+    }
   }
 }
