@@ -1,9 +1,6 @@
 package dev.kwameopareasiedu.simpson.parser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Parser {
   private final Token[] tokens;
@@ -22,11 +19,8 @@ public class Parser {
 
     return switch (currentToken.type()) {
       case STRING -> new StringNode(currentToken.value());
-      case NUMBER -> new NumberNode(
-        currentToken.value().contains(".")
-          ? Double.parseDouble(currentToken.value())
-          : Integer.parseInt(currentToken.value())
-      );
+      case INTEGER -> new IntegerNode(Integer.parseInt(currentToken.value()));
+      case DECIMAL -> new DecimalNode(Double.parseDouble(currentToken.value()));
       case TRUE -> new BooleanNode(true);
       case FALSE -> new BooleanNode(false);
       case NULL -> new NullNode();
@@ -97,9 +91,15 @@ public class Parser {
       this.value = value;
     }
 
+    @Override
+    public String toString() {
+      return String.format("%s[%s]", getClass().getSimpleName(), String.valueOf(value));
+    }
+
     public enum Type {
       STRING,
-      NUMBER,
+      INTEGER,
+      DECIMAL,
       BOOLEAN,
       OBJECT,
       ARRAY,
@@ -113,9 +113,15 @@ public class Parser {
     }
   }
 
-  public static class NumberNode extends Node<Number> {
-    protected NumberNode(Number value) {
-      super(Type.NUMBER, value);
+  public static class IntegerNode extends Node<Integer> {
+    protected IntegerNode(Integer value) {
+      super(Type.INTEGER, value);
+    }
+  }
+
+  public static class DecimalNode extends Node<Double> {
+    protected DecimalNode(Double value) {
+      super(Type.DECIMAL, value);
     }
   }
 
@@ -129,12 +135,50 @@ public class Parser {
     protected ObjectNode(Map<String, Node<?>> value) {
       super(Type.OBJECT, value);
     }
+
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder("ObjectNode[");
+
+      Set<Map.Entry<String, Node<?>>> entries = value.entrySet();
+      int index = 0;
+
+      for (Map.Entry<String, Node<?>> pair : entries) {
+        builder.append(pair.getKey());
+        builder.append("=");
+        builder.append(pair.getValue().toString());
+
+        if (index < entries.size() - 1)
+          builder.append(", ");
+
+        index++;
+      }
+
+      builder.append("]");
+      return builder.toString();
+    }
   }
 
   public static class ArrayNode extends Node<Node<?>[]> {
     protected ArrayNode(Node<?>[] value) {
       super(Type.ARRAY, value);
     }
+
+    @Override
+    public String toString() {
+      StringBuilder builder = new StringBuilder("ArrayNode[");
+
+      for (int index = 0; index < value.length; index++) {
+        builder.append(value[index].toString());
+
+        if (index < value.length - 1)
+          builder.append(", ");
+      }
+
+      builder.append("]");
+      return builder.toString();
+    }
+
   }
 
   public static class NullNode extends Node<Object> {

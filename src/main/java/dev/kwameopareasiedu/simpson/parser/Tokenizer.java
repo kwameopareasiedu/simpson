@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public class Tokenizer {
-  private static final Pattern LITERAL_REGEX = Pattern.compile("\\w");
+  private static final Pattern LITERAL_REGEX = Pattern.compile("[\\w.]");
   private static final Pattern WHITESPACE_REGEX = Pattern.compile("\\s");
 
   public Token[] tokenize(String json) {
@@ -55,8 +55,10 @@ public class Tokenizer {
 
         String parsed = string.toString();
 
-        if (isNumber(parsed))
-          tokens.add(new Token(Token.Type.NUMBER, parsed));
+        if (isInt(parsed))
+          tokens.add(new Token(Token.Type.INTEGER, parsed));
+        else if (isDouble(parsed))
+          tokens.add(new Token(Token.Type.DECIMAL, parsed));
         else if (isTrue(parsed))
           tokens.add(new Token(Token.Type.TRUE, parsed));
         else if (isFalse(parsed))
@@ -75,7 +77,19 @@ public class Tokenizer {
     return tokens.toArray(Token[]::new);
   }
 
-  private boolean isNumber(String val) {
+  private boolean isInt(String val) {
+    try {
+      if (val.contains("."))
+        return false;
+
+      Integer.parseInt(val);
+      return true;
+    } catch (NumberFormatException ignored) {
+      return false;
+    }
+  }
+
+  private boolean isDouble(String val) {
     try {
       Double.parseDouble(val);
       return true;

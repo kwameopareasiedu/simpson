@@ -12,6 +12,7 @@ public class TestPad {
       {
         "id": "647ceaf3657eade56f8224eb",
         "index": 0,
+        "double": 0.13,
         "array": [
           1,
           "another",
@@ -35,5 +36,6 @@ public class TestPad {
 
     Parser parser = new Parser(tokens);
     Parser.Node<?> ast = parser.parse();
+    System.out.println(ast);
   }
 }
