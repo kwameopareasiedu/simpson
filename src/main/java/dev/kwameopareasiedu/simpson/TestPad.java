@@ -1,5 +1,6 @@
 package dev.kwameopareasiedu.simpson;
 
+import dev.kwameopareasiedu.simpson.parser.Parser;
 import dev.kwameopareasiedu.simpson.parser.Token;
 import dev.kwameopareasiedu.simpson.parser.Tokenizer;
 
@@ -31,5 +32,8 @@ public class TestPad {
     for (Token token : tokens) {
       System.out.println(token);
     }
+
+    Parser parser = new Parser(tokens);
+    Parser.Node<?> ast = parser.parse();
   }
 }
