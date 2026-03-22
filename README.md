@@ -67,17 +67,17 @@ corresponding `Node<T>` subclasses:
 
 ### Node Methods
 
-| Node Type                                                       | Method                   | Description                                              |
-|-----------------------------------------------------------------|--------------------------|----------------------------------------------------------|
-| `Node<T>`                                                       | `T get()`                | Returns the typed value of the node                      |
-|                                                                 | `boolean isString()`     | Checks if this node is a `StringNode`                    |
-|                                                                 | `boolean isInteger()`    | Checks if this node is a `IntegerNode`                   |
-|                                                                 | `boolean isDecimal()`    | Checks if this node is a `DecimalNode`                   |
-|                                                                 | `boolean isBoolean()`    | Checks if this node is a `Boolean`                       |
-|                                                                 | `boolean isObject()`     | Checks if this node is a `ObjectNode`                    |
-|                                                                 | `boolean isArray()`      | Checks if this node is a `ArrayNode`                     |
-|                                                                 | `boolean isNull()`       | Checks if this node is a `NullNode`                      |
-| `ObjectNode`<br><small>In addition to `Node<T>` methods</small> | `Node<?> get(keyOrPath)` | Returns a nested node matching the specified key or path |
-|                                                                 | `boolean has(key)`       | Checks if a node exists with the specified key           |
-| `ArrayNode`<br><small>In addition to `Node<T>` methods</small>  | `int getLength()`        | Returns the length of items of the node                  |
-|                                                                 | `Node<?> get(int index)` | Returns the node at the specified index                  |
+| Node Type                                                                   | Method                   | Description                                                 |
+|-----------------------------------------------------------------------------|--------------------------|-------------------------------------------------------------|
+| `Node<T>`                                                                   | `T get()`                | Returns the typed value of the node                         |
+|                                                                             | `boolean isString()`     | Checks if this node is a `StringNode`                       |
+|                                                                             | `boolean isInteger()`    | Checks if this node is a `IntegerNode`                      |
+|                                                                             | `boolean isDecimal()`    | Checks if this node is a `DecimalNode`                      |
+|                                                                             | `boolean isBoolean()`    | Checks if this node is a `Boolean`                          |
+|                                                                             | `boolean isObject()`     | Checks if this node is a `ObjectNode`                       |
+|                                                                             | `boolean isArray()`      | Checks if this node is a `ArrayNode`                        |
+|                                                                             | `boolean isNull()`       | Checks if this node is a `NullNode`                         |
+| `ObjectNode`<br><small>In addition to <code>Node\<T></code> methods</small> | `Node<?> get(keyOrPath)` | Returns a nested node matching the specified key or path    |
+|                                                                             | `boolean has(key)`       | Checks if a node exists with the specified key              |
+| `ArrayNode`<br><small>In addition to <code>Node\<T></code> methods</small>  | `int getLength()`        | Returns <br/>the length of <br/><br/>items <br/>of the node |
+|                                                                             | `Node<?> get(int index)` | Returns the node at the specified index                     |
