@@ -5,19 +5,20 @@ import java.util.*;
 public class Parser {
   private final Tokenizer.Token[] tokens;
   private int index = 0;
+  private int depth = 0;
 
   public Parser(Tokenizer.Token[] tokens) {
     if (tokens.length == 0)
       throw new IllegalArgumentException("Token list cannot empty");
 
     this.tokens = tokens;
-    index = 0;
   }
 
   public Node<?> parse() {
+    depth++;
     Tokenizer.Token currentToken = tokens[index];
 
-    return switch (currentToken.type()) {
+    Node<?> parsedNode = switch (currentToken.type()) {
       case STRING -> new StringNode(currentToken.value());
       case INTEGER -> new IntegerNode(Integer.parseInt(currentToken.value()));
       case DECIMAL -> new DecimalNode(Double.parseDouble(currentToken.value()));
@@ -28,6 +29,17 @@ public class Parser {
       case BRACKET_OPEN -> parseArray();
       default -> throw new IllegalArgumentException("Unexpected token: " + currentToken.type());
     };
+
+    depth--;
+
+    if (depth == 0) {
+      try {
+        Tokenizer.Token nextToken = peek();
+        throw new IllegalArgumentException("Unexpected token: " + nextToken.type());
+      } catch (IndexOutOfBoundsException ignored) { }
+    }
+
+    return parsedNode;
   }
 
   private ObjectNode parseObject() {
@@ -54,8 +66,24 @@ public class Parser {
 
       token = advance(); // Should be a comma or a closing brace
 
-      if (token.type() == Tokenizer.Token.Type.COMMA)
+      if (token.type() == Tokenizer.Token.Type.COMMA) {
+        Tokenizer.Token nextToken = peek();
+
+        // A closing brace should not come immediately after a comma
+        if (nextToken.type() == Tokenizer.Token.Type.BRACE_CLOSE) {
+          throw new IllegalArgumentException(
+            "Expected object key after comma. Found " + nextToken.type()
+          );
+        }
+
         token = advance();
+        continue;
+      }
+
+      if (token.type() != Tokenizer.Token.Type.BRACE_CLOSE)
+        throw new IllegalArgumentException(
+          "Expected comma after object value. Found " + token.type()
+        );
     }
 
     return new ObjectNode(objectNodeValue);
@@ -63,7 +91,7 @@ public class Parser {
 
   private ArrayNode parseArray() {
     List<Node<?>> arrayNodeValue = new ArrayList<>();
-    Tokenizer.Token token = advance(); // Should be an object key
+    Tokenizer.Token token = advance(); // Should be an array element
 
     while (token.type() != Tokenizer.Token.Type.BRACKET_CLOSE) {
       Node<?> value = parse();
@@ -71,8 +99,24 @@ public class Parser {
 
       token = advance(); // Should be a comma or a closing bracket
 
-      if (token.type() == Tokenizer.Token.Type.COMMA)
+      if (token.type() == Tokenizer.Token.Type.COMMA) {
+        Tokenizer.Token nextToken = peek();
+
+        // A closing bracket should not come immediately after a comma
+        if (nextToken.type() == Tokenizer.Token.Type.BRACKET_CLOSE) {
+          throw new IllegalArgumentException(
+            "Expected array element after comma. Found " + nextToken.type()
+          );
+        }
+
         token = advance();
+        continue;
+      }
+
+      if (token.type() != Tokenizer.Token.Type.BRACKET_CLOSE)
+        throw new IllegalArgumentException(
+          "Expected comma after array element. Found " + token.type()
+        );
     }
 
     return new ArrayNode(arrayNodeValue.toArray(Node[]::new));
@@ -80,6 +124,10 @@ public class Parser {
 
   private Tokenizer.Token advance() {
     return tokens[++index];
+  }
+
+  private Tokenizer.Token peek() {
+    return tokens[index + 1];
   }
 
   public static abstract class Node<V> {

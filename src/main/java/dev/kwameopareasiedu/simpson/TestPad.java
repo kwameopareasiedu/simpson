@@ -42,5 +42,9 @@ public class TestPad {
     System.out.println(parsedArray.getLength());
     System.out.println(parsedArray.get(4));
     System.out.println(parsedArray.get(4).get());
+
+//    System.out.println(Simpson.parse("[\"\\uD800\\\"]"));;
+    System.out.println(Simpson.parse("[\"\\uD800\\\"h]"));;
+//    System.out.println(Simpson.parse("[\"\\g\"]"));;
   }
 }
