@@ -6,7 +6,7 @@ public class TestPad {
   private TestPad() { }
 
   public static void main(String[] args) {
-    String json = """
+    String objectJson = """
       {
         "id": "647ceaf3657eade56f8224eb",
         "index": 0,
@@ -25,8 +25,22 @@ public class TestPad {
       }
       """;
 
-    Parser.ObjectNode parsed = (Parser.ObjectNode) Simpson.parse(json);
+    Parser.ObjectNode parsedObject = (Parser.ObjectNode) Simpson.parse(objectJson);
+    System.out.println(parsedObject.get("double"));
 
-    System.out.println(parsed.get("double"));
+    String arrayJson = """
+      [
+        "animal",
+        "country",
+        "food",
+        "plant",
+        "sport"
+      ]
+      """;
+
+    Parser.ArrayNode parsedArray = (Parser.ArrayNode) Simpson.parse(arrayJson);
+    System.out.println(parsedArray.getLength());
+    System.out.println(parsedArray.get(4));
+    System.out.println(parsedArray.get(4).get());
   }
 }
