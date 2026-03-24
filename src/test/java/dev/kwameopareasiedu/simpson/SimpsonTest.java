@@ -1,6 +1,8 @@
 package dev.kwameopareasiedu.simpson;
 
-import dev.kwameopareasiedu.simpson.parser.Parser;
+import dev.kwameopareasiedu.simpson.nodes.ArrayNode;
+import dev.kwameopareasiedu.simpson.nodes.Node;
+import dev.kwameopareasiedu.simpson.nodes.ObjectNode;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -40,10 +42,10 @@ public class SimpsonTest {
       }
       """;
 
-    Parser.Node<?> parsedNode = Simpson.parse(objectJson);
+    Node<?> parsedNode = Simpson.parse(objectJson);
     assertTrue(parsedNode.isObject());
 
-    Parser.ObjectNode parsedObject = (Parser.ObjectNode) parsedNode;
+    ObjectNode parsedObject = (ObjectNode) parsedNode;
     assertTrue(parsedObject.has("id"));
     assertTrue(parsedObject.has("index"));
     assertTrue(parsedObject.has("double"));
@@ -82,8 +84,8 @@ public class SimpsonTest {
     assertThrows(ClassCastException.class, () -> parsedObject.getDecimalNode("booleanFalse"));
     assertThrows(ClassCastException.class, () -> parsedObject.getBooleanNode("null"));
 
-    Parser.ArrayNode parsedArray = parsedObject.getArrayNode("array");
-    assertEquals(8, parsedArray.getLength());
+    ArrayNode parsedArray = parsedObject.getArrayNode("array");
+    assertEquals(8, parsedArray.length());
     assertTrue(parsedArray.get(0).isInteger());
     assertTrue(parsedArray.get(1).isString());
     assertTrue(parsedArray.get(2).isBoolean());
@@ -114,11 +116,11 @@ public class SimpsonTest {
       ]
       """;
 
-    Parser.Node<?> parsedNode = Simpson.parse(arrayJson);
+    Node<?> parsedNode = Simpson.parse(arrayJson);
     assertTrue(parsedNode.isArray());
 
-    Parser.ArrayNode parsedArray = (Parser.ArrayNode) parsedNode;
-    assertEquals(5, parsedArray.getLength());
+    ArrayNode parsedArray = (ArrayNode) parsedNode;
+    assertEquals(5, parsedArray.length());
     assertTrue(parsedArray.get(0).isString());
     assertTrue(parsedArray.get(1).isString());
     assertTrue(parsedArray.get(2).isString());

@@ -1,5 +1,17 @@
 # Change Log
 
+# 0.3.0
+
+- Moved `Parser.Node<T>` class to standalone `Node<T>` class
+- Moved `Parser.StringNode` class to standalone `StringNode` class
+- Moved `Parser.IntegerNode` class to standalone `IntegerNode` class
+- Moved `Parser.DecimalNode` class to standalone `DecimalNode` class
+- Moved `Parser.BooleanNode` class to standalone `BooleanNode` class
+- Moved `Parser.ObjectNode` class to standalone `ObjectNode` class
+- Moved `Parser.ArrayNode` class to standalone `ArrayNode` class
+- Moved `Parser.NullNode` class to standalone `NullNode` class
+- Renamed `int getLength()` in `ArrayNode` class to `int length()`
+
 ## 0.2.0
 
 - Added Javadocs to public API

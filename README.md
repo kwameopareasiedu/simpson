@@ -44,7 +44,8 @@ then reload your Maven project in your IDE
 ## Usage
 
 ```java
-import dev.kwameopareasiedu.simpson.parser.Parser;
+
+import dev.kwameopareasiedu.simpson.nodes.ObjectNode;
 
 public class JsonTest {
   public static void main(String[] args) {
@@ -67,7 +68,7 @@ public class JsonTest {
       }
       """;
 
-    Parser.ObjectNode parsed = (Parser.ObjectNode) Simpson.parse(objectJson);
+    ObjectNode parsed = (ObjectNode) Simpson.parse(objectJson);
 
     System.out.println(parsed.get("id"));                   // StringNode[647ceaf3657eade56f8224eb]
     System.out.println(parsed.get("id").get());             // 647ceaf3657eade56f8224eb

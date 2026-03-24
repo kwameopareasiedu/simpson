@@ -1,4 +1,4 @@
-package dev.kwameopareasiedu.simpson.parser;
+package dev.kwameopareasiedu.simpson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -182,29 +182,6 @@ public class Tokenizer {
   /** Checks if a string can be parsed to {@code null} */
   private boolean isNull(String val) {
     return val.equals("null");
-  }
-
-  /**
-   * {@link Token} represents a valid element of grammar of the JSON specification.
-   * <p>
-   * It stores the element type the value as well as line and column number for debugging
-   */
-  public record Token(Type type, String value, int line, int column) {
-    /** Represents the type of grammar element a {@link Token token} is */
-    public enum Type {
-      BRACE_OPEN,
-      BRACE_CLOSE,
-      BRACKET_OPEN,
-      BRACKET_CLOSE,
-      STRING,
-      INTEGER,
-      DECIMAL,
-      TRUE,
-      FALSE,
-      NULL,
-      COLON,
-      COMMA
-    }
   }
 
   /**
