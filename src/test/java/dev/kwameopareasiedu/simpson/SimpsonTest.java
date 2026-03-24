@@ -31,7 +31,8 @@ public class SimpsonTest {
           false,
           { "foo": "bar" },
           [],
-          [1, 2, "hello"]
+          [1, 2.0, "hello"],
+          null
         ],
         "booleanTrue": true,
         "booleanFalse": false,
@@ -51,6 +52,7 @@ public class SimpsonTest {
     assertTrue(parsedObject.has("booleanFalse"));
     assertTrue(parsedObject.has("null"));
     assertTrue(parsedObject.get("array").isArray());
+    assertTrue(parsedObject.get("double").isDecimal());
     assertEquals("647ceaf3657eade56f8224eb", parsedObject.get("id").get());
     assertEquals(0, parsedObject.get("index").get());
     assertEquals(0.13, parsedObject.get("double").get());
@@ -61,15 +63,43 @@ public class SimpsonTest {
     assertEquals("bar", parsedObject.get("array.4.foo").get());
     assertThrows(Throwable.class, () -> parsedObject.get("array.5.0"));
     assertEquals("hello", parsedObject.get("array.6.2").get());
+    assertDoesNotThrow(() -> {
+      var ignoredId = parsedObject.getStringNode("id");
+      var ignoredIndex = parsedObject.getIntegerNode("index");
+      var ignoredDouble = parsedObject.getDecimalNode("double");
+      var ignoredArray = parsedObject.getArrayNode("array");
+      var ignoredBooleanTrue = parsedObject.getBooleanNode("booleanTrue");
+      var ignoredBooleanFalse = parsedObject.getBooleanNode("booleanFalse");
+      var ignoredNestedArray = parsedObject.getObjectNode("array.4");
+      var ignoredNull = parsedObject.getNullNode("null");
+    });
+    assertThrows(ClassCastException.class, () -> parsedObject.getIntegerNode("id"));
+    assertThrows(ClassCastException.class, () -> parsedObject.getStringNode("index"));
+    assertThrows(ClassCastException.class, () -> parsedObject.getNullNode("double"));
+    assertThrows(ClassCastException.class, () -> parsedObject.getObjectNode("array"));
+    assertThrows(ClassCastException.class, () -> parsedObject.getArrayNode("array.4"));
+    assertThrows(ClassCastException.class, () -> parsedObject.getDecimalNode("booleanTrue"));
+    assertThrows(ClassCastException.class, () -> parsedObject.getDecimalNode("booleanFalse"));
+    assertThrows(ClassCastException.class, () -> parsedObject.getBooleanNode("null"));
 
-    Parser.ArrayNode parsedArray = (Parser.ArrayNode) parsedObject.get("array");
-    assertEquals(7, parsedArray.getLength());
+    Parser.ArrayNode parsedArray = parsedObject.getArrayNode("array");
+    assertEquals(8, parsedArray.getLength());
     assertTrue(parsedArray.get(0).isInteger());
     assertTrue(parsedArray.get(1).isString());
     assertTrue(parsedArray.get(2).isBoolean());
     assertTrue(parsedArray.get(3).isBoolean());
     assertTrue(parsedArray.get(4).isObject());
     assertTrue(parsedArray.get(5).isArray());
+    assertDoesNotThrow(() -> {
+      var ignoredId = parsedArray.getStringNode(1);
+      var ignoredIndex = parsedArray.getIntegerNode(0);
+      var ignoredArray = parsedArray.getArrayNode(6);
+      var ignoredDouble = parsedArray.getArrayNode(6).getDecimalNode(1);
+      var ignoredBooleanTrue = parsedArray.getBooleanNode(2);
+      var ignoredBooleanFalse = parsedArray.getBooleanNode(3);
+      var ignoredNestedArray = parsedArray.getObjectNode(4);
+      var ignoredNull = parsedArray.getNullNode(7);
+    });
   }
 
   @Test

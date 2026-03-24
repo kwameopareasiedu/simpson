@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/** {@link Tokenizer} splits JSON strings into recognizable parts or tokens for use in later parsing */
 public class Tokenizer {
   private static final Pattern LITERAL_REGEX = Pattern.compile("[+\\w.-]");
   private static final Pattern NUMBER_REGEX = Pattern.compile("^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$");
@@ -13,6 +14,7 @@ public class Tokenizer {
   private static final Pattern WHITESPACE_REGEX = Pattern.compile("\\s");
   private static final char DELETE_CHAR_CODE = '\u007F';
 
+  /** Parses a JSON string into a list of {@link Token tokens} */
   public Token[] tokenize(String json) {
     List<Token> tokens = new ArrayList<>();
     StringBuilder string = new StringBuilder();
@@ -141,6 +143,7 @@ public class Tokenizer {
     return tokens.toArray(Token[]::new);
   }
 
+  /** Checks if a string can be parsed into an integer */
   private boolean isInt(String val) {
     try {
       if (!NUMBER_REGEX.matcher(val).matches() || val.contains("."))
@@ -153,6 +156,7 @@ public class Tokenizer {
     return false;
   }
 
+  /** Checks if a string can be parsed into an double */
   private boolean isDouble(String val) {
     try {
       if (!NUMBER_REGEX.matcher(val).matches())
@@ -165,19 +169,28 @@ public class Tokenizer {
     }
   }
 
+  /** Checks if a string can be parsed to {@code true} */
   private boolean isTrue(String val) {
     return val.equals("true");
   }
 
+  /** Checks if a string can be parsed to {@code false} */
   private boolean isFalse(String val) {
     return val.equals("false");
   }
 
+  /** Checks if a string can be parsed to {@code null} */
   private boolean isNull(String val) {
     return val.equals("null");
   }
 
+  /**
+   * {@link Token} represents a valid element of grammar of the JSON specification.
+   * <p>
+   * It stores the element type the value as well as line and column number for debugging
+   */
   public record Token(Type type, String value, int line, int column) {
+    /** Represents the type of grammar element a {@link Token token} is */
     public enum Type {
       BRACE_OPEN,
       BRACE_CLOSE,
@@ -194,6 +207,11 @@ public class Tokenizer {
     }
   }
 
+  /**
+   * {@link TokenizerException} is a custom exception class thrown by {@link Tokenizer} when an error occurs.
+   * <p>
+   * It requires the index, line and column numbers of the error location to give more context when debugging
+   */
   private static class TokenizerException extends RuntimeException {
     public TokenizerException(String message, int index, int line, int column) {
       super(String.format("%s at position %d (line %d, column %d)", message, index + 1, line, column));
