@@ -23,14 +23,15 @@ public class SimpsonTest {
       {
         "id": "647ceaf3657eade56f8224eb",
         "index": 0,
-        "double": -1e+9999,
+        "double": 0.13,
         "array": [
           1,
           "another",
           true,
           false,
           { "foo": "bar" },
-          []
+          [],
+          [1, 2, "hello"]
         ],
         "booleanTrue": true,
         "booleanFalse": false,
@@ -50,10 +51,19 @@ public class SimpsonTest {
     assertTrue(parsedObject.has("booleanFalse"));
     assertTrue(parsedObject.has("null"));
     assertTrue(parsedObject.get("array").isArray());
-    assertTrue(parsedObject.get("array.4.foo").isString());
+    assertEquals("647ceaf3657eade56f8224eb", parsedObject.get("id").get());
+    assertEquals(0, parsedObject.get("index").get());
+    assertEquals(0.13, parsedObject.get("double").get());
+    assertEquals(true, parsedObject.get("booleanTrue").get());
+    assertEquals(false, parsedObject.get("booleanFalse").get());
+    assertNull(parsedObject.get("null").get());
+    assertEquals("another", parsedObject.get("array.1").get());
+    assertEquals("bar", parsedObject.get("array.4.foo").get());
+    assertThrows(Throwable.class, () -> parsedObject.get("array.5.0"));
+    assertEquals("hello", parsedObject.get("array.6.2").get());
 
     Parser.ArrayNode parsedArray = (Parser.ArrayNode) parsedObject.get("array");
-    assertEquals(6, parsedArray.getLength());
+    assertEquals(7, parsedArray.getLength());
     assertTrue(parsedArray.get(0).isInteger());
     assertTrue(parsedArray.get(1).isString());
     assertTrue(parsedArray.get(2).isBoolean());

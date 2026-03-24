@@ -1,6 +1,7 @@
 # Simpson
 
-Simpson (**Simp**le J**son** ) is a simple JSON **deserializer** for Java.
+Simpson (**Simp**le J**son** ) is a simple [RFC8259-compliant](https://datatracker.ietf.org/doc/html/rfc8259) JSON
+**deserializer** for Java.
 
 It deserializes a JSON string into a walkable node and provides methods for the following:
 
@@ -81,3 +82,14 @@ corresponding `Node<T>` subclasses:
 |                                                                             | `boolean has(key)`       | Checks if a node exists with the specified key              |
 | `ArrayNode`<br><small>In addition to <code>Node\<T></code> methods</small>  | `int getLength()`        | Returns <br/>the length of <br/><br/>items <br/>of the node |
 |                                                                             | `Node<?> get(int index)` | Returns the node at the specified index                     |
+
+## Testing
+
+Simpson contains 318 tests written in accordance with the [RFC8259 spec](https://datatracker.ietf.org/doc/html/rfc8259).
+located in the `src/test/resources/rfc8259-tests/` directory.
+
+Run the following command to run these tests:
+
+```bash
+mvn test
+```
