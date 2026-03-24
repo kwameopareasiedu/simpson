@@ -50,7 +50,7 @@ public class Tokenizer {
         ch = json.charAt(++index);
         column++;
 
-        boolean processedControlChar = false;
+        boolean processedEscapeSequence = false;
 
         while (ch != '"') {
           if (Character.isISOControl(ch) && ch != DELETE_CHAR_CODE)
@@ -81,10 +81,10 @@ public class Tokenizer {
             }
 
             string.append(escapedString);
-            processedControlChar = true;
+            processedEscapeSequence = true;
           }
 
-          if (!processedControlChar) {
+          if (!processedEscapeSequence) {
             string.append(ch);
 
             if (index + 1 >= json.length())
@@ -94,7 +94,7 @@ public class Tokenizer {
             column++;
           }
 
-          processedControlChar = false;
+          processedEscapeSequence = false;
         }
 
         tokens.add(new Token(Token.Type.STRING, string.toString(), line, column));
@@ -124,7 +124,7 @@ public class Tokenizer {
         } else {
           throw new TokenizerException("Unexpected literal value", index, line, column);
         }
-      } else if (Character.isISOControl(ch)) { // Control characters outside a string
+      } else if (Character.isISOControl(ch)) { // Escape sequences outside a string
         if (ch == '\n') {
           line++;
           column = 1;
