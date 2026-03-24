@@ -85,8 +85,8 @@ corresponding `Node<T>` subclasses:
 
 ## Testing
 
-Simpson contains 318 tests written in accordance with the [RFC8259 spec](https://datatracker.ietf.org/doc/html/rfc8259).
-located in the `src/test/resources/rfc8259-tests/` directory.
+Simpson contains 318 tests written in accordance with the [RFC8259 spec](https://datatracker.ietf.org/doc/html/rfc8259)
+which are located in the `src/test/resources/rfc8259-tests/` directory.
 
 Run the following command to run these tests:
 
