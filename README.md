@@ -124,3 +124,7 @@ Run the following command to run these tests:
 ```bash
 mvn test
 ```
+
+## Change Log
+
+View the changelog [here](CHANGELOG.md)
