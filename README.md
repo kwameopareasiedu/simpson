@@ -10,6 +10,37 @@ It deserializes a JSON string into a walkable node and provides methods for the 
 3. Checking the length of JSON arrays
 4. Extracting **typed** values.
 
+## Installation
+
+Simpson is distributed as a Maven dependency. Include it in your project by adding its dependency to your `pom.xml`,
+then reload your Maven project in your IDE
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project>
+  ...
+  <repositories>
+    ...
+    <!-- Include the repository block -->
+    <repository>
+      <id>simpson-maven</id>
+      <url>https://raw.github.com/kwameopareasiedu/simpson/master/mvn</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    ...
+    <!-- Include the dependency block -->
+    <dependency>
+      <groupId>dev.kwameopareasiedu</groupId>
+      <artifactId>simpson</artifactId>
+      <version>0.1.0</version>
+    </dependency>
+  </dependencies>
+</project>
+```
+
 ## Usage
 
 ```java
