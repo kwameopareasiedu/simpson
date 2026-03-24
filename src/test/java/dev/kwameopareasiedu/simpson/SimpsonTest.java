@@ -92,8 +92,9 @@ public class SimpsonTest {
     assertNotNull(url);
 
     try (Stream<Path> pathStream = Files.list(Paths.get(url.toURI()))) {
-      Path[] paths =
-        pathStream.sorted(Comparator.comparing(p -> p.toFile().getName())).toArray(Path[]::new);
+      Path[] paths = pathStream
+        .sorted(Comparator.comparing(p -> p.toFile().getName()))
+        .toArray(Path[]::new);
 
       for (Path path : paths) {
         String pathFileName = path.toFile().getName();
@@ -111,30 +112,18 @@ public class SimpsonTest {
             line = reader.readLine();
 
             if (line != null)
-              json.append(line);
+              json.append(line).append("\n");
           } while (line != null);
 
           System.out.println("Processing: " + pathFileName);
 
           switch (completion) {
-            case PASS -> {
-              assertDoesNotThrow(() -> {
-                Simpson.parse(json.toString());
-              });
-              break;
-            }
-            case FAIL -> {
-              assertThrows(Exception.class, () -> {
-                Simpson.parse(json.toString());
-              });
-              break;
-            }
+            case PASS -> assertDoesNotThrow(() -> Simpson.parse(json.toString()));
+            case FAIL -> assertThrows(Throwable.class, () -> Simpson.parse(json.toString()));
             case DONT_CARE -> {
               try {
                 Simpson.parse(json.toString());
-              } catch (Exception ignored) {
-
-              }
+              } catch (Exception ignored) { }
             }
           }
         }

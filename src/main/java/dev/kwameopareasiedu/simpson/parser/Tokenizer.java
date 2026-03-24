@@ -7,67 +7,80 @@ import java.util.regex.Pattern;
 public class Tokenizer {
   private static final Pattern LITERAL_REGEX = Pattern.compile("[+\\w.-]");
   private static final Pattern NUMBER_REGEX = Pattern.compile("^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?$");
-  private static final Pattern CONTROL_CHAR_REGEX = Pattern.compile("^\\\\[\"\\\\\\/bfnrt]$");
+  private static final Pattern CONTROL_CHAR_REGEX = Pattern.compile("^\\\\[\"\\\\/bfnrt]$");
   private static final Pattern UNICODE_START_REGEX = Pattern.compile("^\\\\u$");
   private static final Pattern UNICODE_REGEX = Pattern.compile("^\\\\u[0-9A-Fa-f]{4}$");
   private static final Pattern WHITESPACE_REGEX = Pattern.compile("\\s");
+  private static final char DELETE_CHAR_CODE = '\u007F';
 
   public Token[] tokenize(String json) {
     List<Token> tokens = new ArrayList<>();
     StringBuilder string = new StringBuilder();
-    int index = 0;
+    int index = 0, line = 1, column = 1;
 
     while (index < json.length()) {
       char ch = json.charAt(index);
 
       if (ch == '{') {
-        tokens.add(new Token(Token.Type.BRACE_OPEN, String.valueOf(ch)));
+        tokens.add(new Token(Token.Type.BRACE_OPEN, String.valueOf(ch), line, column));
+        column++;
         index++;
       } else if (ch == '}') {
-        tokens.add(new Token(Token.Type.BRACE_CLOSE, String.valueOf(ch)));
+        tokens.add(new Token(Token.Type.BRACE_CLOSE, String.valueOf(ch), line, column));
+        column++;
         index++;
       } else if (ch == '[') {
-        tokens.add(new Token(Token.Type.BRACKET_OPEN, String.valueOf(ch)));
+        tokens.add(new Token(Token.Type.BRACKET_OPEN, String.valueOf(ch), line, column));
+        column++;
         index++;
       } else if (ch == ']') {
-        tokens.add(new Token(Token.Type.BRACKET_CLOSE, String.valueOf(ch)));
+        tokens.add(new Token(Token.Type.BRACKET_CLOSE, String.valueOf(ch), line, column));
+        column++;
         index++;
       } else if (ch == ':') {
-        tokens.add(new Token(Token.Type.COLON, String.valueOf(ch)));
+        tokens.add(new Token(Token.Type.COLON, String.valueOf(ch), line, column));
+        column++;
         index++;
       } else if (ch == ',') {
-        tokens.add(new Token(Token.Type.COMMA, String.valueOf(ch)));
+        tokens.add(new Token(Token.Type.COMMA, String.valueOf(ch), line, column));
+        column++;
         index++;
       } else if (ch == '"') {
         string.setLength(0);
         ch = json.charAt(++index);
+        column++;
 
         boolean processedControlChar = false;
 
         while (ch != '"') {
+          if (Character.isISOControl(ch) && ch != DELETE_CHAR_CODE)
+            throw new TokenizerException("Bad control character", index, line, column);
+
           if (ch == '\\') {
-            StringBuilder controlString = new StringBuilder();
+            StringBuilder escapedString = new StringBuilder();
 
             while (true) {
-              if (controlString.length() == 2) {
-                if (CONTROL_CHAR_REGEX.matcher(controlString).matches())
+              if (escapedString.length() == 2) {
+                if (CONTROL_CHAR_REGEX.matcher(escapedString).matches()) {
                   break;
-                else if (!UNICODE_START_REGEX.matcher(controlString).matches())
-                  throw new IllegalArgumentException("Bad escaped character: " + controlString);
+                } else if (!UNICODE_START_REGEX.matcher(escapedString).matches()) {
+                  throw new TokenizerException("Bad escaped character", index, line, column);
+                }
               }
 
-              if (controlString.length() == 6) {
-                if (UNICODE_REGEX.matcher(controlString).matches())
+              if (escapedString.length() == 6) {
+                if (UNICODE_REGEX.matcher(escapedString).matches())
                   break;
 
-                throw new IllegalArgumentException("Bad control character");
+                throw new TokenizerException("Bad unicode escaped character", index, line, column);
               }
 
-              controlString.append(ch);
+              escapedString.append(ch);
               ch = json.charAt(++index);
+              column++;
             }
 
-            string.append(controlString);
+            string.append(escapedString);
             processedControlChar = true;
           }
 
@@ -75,15 +88,17 @@ public class Tokenizer {
             string.append(ch);
 
             if (index + 1 >= json.length())
-              throw new IllegalArgumentException("Unterminated string");
+              throw new TokenizerException("Unterminated string", index, line, column);
 
             ch = json.charAt(++index);
+            column++;
           }
 
           processedControlChar = false;
         }
 
-        tokens.add(new Token(Token.Type.STRING, string.toString()));
+        tokens.add(new Token(Token.Type.STRING, string.toString(), line, column));
+        column++;
         index++;
       } else if (LITERAL_REGEX.matcher(String.valueOf(ch)).matches()) {
         string.setLength(0);
@@ -91,26 +106,35 @@ public class Tokenizer {
         while (LITERAL_REGEX.matcher(String.valueOf(ch)).matches()) {
           string.append(ch);
           ch = json.charAt(++index);
+          column++;
         }
 
         String parsed = string.toString();
 
-        if (isInt(parsed))
-          tokens.add(new Token(Token.Type.INTEGER, parsed));
-        else if (isDouble(parsed))
-          tokens.add(new Token(Token.Type.DECIMAL, parsed));
-        else if (isTrue(parsed))
-          tokens.add(new Token(Token.Type.TRUE, parsed));
-        else if (isFalse(parsed))
-          tokens.add(new Token(Token.Type.FALSE, parsed));
-        else if (isNull(parsed))
-          tokens.add(new Token(Token.Type.NULL, parsed));
-        else
-          throw new IllegalArgumentException("Unexpected value: " + parsed);
+        if (isInt(parsed)) {
+          tokens.add(new Token(Token.Type.INTEGER, parsed, line, column));
+        } else if (isDouble(parsed)) {
+          tokens.add(new Token(Token.Type.DECIMAL, parsed, line, column));
+        } else if (isTrue(parsed)) {
+          tokens.add(new Token(Token.Type.TRUE, parsed, line, column));
+        } else if (isFalse(parsed)) {
+          tokens.add(new Token(Token.Type.FALSE, parsed, line, column));
+        } else if (isNull(parsed)) {
+          tokens.add(new Token(Token.Type.NULL, parsed, line, column));
+        } else {
+          throw new TokenizerException("Unexpected literal value", index, line, column);
+        }
+      } else if (Character.isISOControl(ch)) { // Control characters outside a string
+        if (ch == '\n') {
+          line++;
+          column = 1;
+          index++;
+        } else throw new TokenizerException("Unexpected value", index, line, column);
       } else if (WHITESPACE_REGEX.matcher(String.valueOf(ch)).matches()) {
+        column++;
         index++;
       } else {
-        throw new IllegalArgumentException("Unexpected value: " + ch);
+        throw new TokenizerException("Unexpected value", index, line, column);
       }
     }
 
@@ -153,7 +177,7 @@ public class Tokenizer {
     return val.equals("null");
   }
 
-  public record Token(Type type, String value) {
+  public record Token(Type type, String value, int line, int column) {
     public enum Type {
       BRACE_OPEN,
       BRACE_CLOSE,
@@ -167,6 +191,12 @@ public class Tokenizer {
       NULL,
       COLON,
       COMMA
+    }
+  }
+
+  private static class TokenizerException extends RuntimeException {
+    public TokenizerException(String message, int index, int line, int column) {
+      super(String.format("%s at position %d (line %d, column %d)", message, index + 1, line, column));
     }
   }
 }
